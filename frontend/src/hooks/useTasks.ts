@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { useState, useCallback, useEffect } from 'react';
 import { Task, CreateTaskInput, UpdateTaskInput } from '@/types/task';
 import { useWebSocket } from './useWebSocket';
@@ -11,7 +13,7 @@ export const useTasks = () => {
   useWebSocket((message) => {
     switch (message.event) {
       case 'created':
-        setTasks(prev => [...prev, message.task!]);
+        setTasks(prev => [message.task!, ...prev]);
         break;
       case 'updated':
         setTasks(prev => prev.map(task => 

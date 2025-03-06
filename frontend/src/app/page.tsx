@@ -1,6 +1,6 @@
 'use client';
 
-import { TaskList } from '@/components/tasks/TaskList';
+import { TaskList } from '@/components/TaskList';
 
 export default function Home() {
   return (

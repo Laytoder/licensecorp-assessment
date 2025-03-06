@@ -1,5 +1,6 @@
-import { Task } from '@/types/task';
 import { useEffect, useRef } from 'react';
+import { config } from '@/config/env';
+import { Task } from '@/types/task';
 
 interface WebSocketMessage {
   event: 'created' | 'updated' | 'deleted';
@@ -11,7 +12,7 @@ export const useWebSocket = (onMessage: (data: WebSocketMessage) => void) => {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8001/ws/');
+    const ws = new WebSocket(config.wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -37,4 +38,4 @@ export const useWebSocket = (onMessage: (data: WebSocketMessage) => void) => {
   }, [onMessage]);
 
   return wsRef.current;
-}; 
+};
