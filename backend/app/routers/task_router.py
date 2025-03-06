@@ -36,16 +36,9 @@ def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
     pubsub_redis.publish(settings.TASKS_CHANNEL, create_pub_msg(new_task, "created")) 
     return new_task
 
-@router.get("/", response_model=List[TaskOut])
-def get_all_tasks(db: Session = Depends(get_db)):
-    return TaskService.get_all_tasks(db)
-
-@router.get("/{task_id}", response_model=TaskOut)
-def get_task_by_id(task_id: int, db: Session = Depends(get_db)):
-    task = TaskService.get_task_by_id(db, task_id)
-    if not task:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
-    return task
+@router.get("/{page}", response_model=List[TaskOut])
+def get_tasks_by_page(page: int, db: Session = Depends(get_db)):
+    return TaskService.get_tasks_page(db, page)
 
 @router.put("/{task_id}", response_model=TaskOut)
 def update_task(task_id: int, updates: TaskUpdate, db: Session = Depends(get_db)):

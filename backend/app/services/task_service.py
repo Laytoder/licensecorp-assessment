@@ -16,31 +16,8 @@ class TaskService:
         return TaskOut.from_orm(new_task)
     
     @staticmethod
-    def get_task_by_id(db: Session, task_id: int) -> Optional[TaskOut]:
-        cached = redis_utils.cache_get_task(task_id)
-        if cached:
-            return TaskOut(**cached)
-        task = TaskRepository.get_task_by_id(db, task_id)
-        if not task:
-            return None
-        out_data = TaskOut.from_orm(task).dict()
-        redis_utils.cache_set_task(task.id, out_data, task.expiry_date)
-        return TaskOut(**out_data)
-
-    @staticmethod
-    def get_all_tasks(db: Session) -> List[TaskOut]:
-        cached_list = redis_utils.cache_get_all_tasks()
-        if cached_list:
-            return [TaskOut(**task_dict) for task_dict in cached_list]
-        tasks = TaskRepository.get_all_tasks(db)
-        out_list = [TaskOut.from_orm(t).dict() for t in tasks]
-        for t, item in zip(tasks, out_list):
-            redis_utils.cache_set_task(item["id"], item, t.expiry_date)
-        return [TaskOut(**item) for item in out_list]
-    
-    @staticmethod
-    def get_tasks_page(db: Session, page: int, page_size: int) -> List[TaskOut]:
-        ordered_ids, cached_tasks, missing_ids = redis_utils.cache_get_tasks_page_with_missing(page, page_size)
+    def get_tasks_page(db: Session, page: int) -> List[TaskOut]:
+        ordered_ids, cached_tasks, missing_ids = redis_utils.cache_get_tasks_page_with_missing(page)
 
         if missing_ids:
             missing_tasks = TaskRepository.get_tasks_by_ids(db, missing_ids)

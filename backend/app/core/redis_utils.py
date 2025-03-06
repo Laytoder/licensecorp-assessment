@@ -2,11 +2,9 @@ import redis
 import json
 import datetime
 from app.core.config import settings
-from app.core.constants import AnalyticsCounters
+from app.core.constants import AnalyticsCounters, PAGE_SIZE, MAX_TASK_TTL, MAX_REDIS_MEMORY
 from app.repositories.task_repository import TaskRepository
 from app.core.database import get_db
-
-MAX_TASK_TTL = 3600
 
 redis_client = redis.Redis(
     host=settings.REDIS_HOST,
@@ -14,7 +12,7 @@ redis_client = redis.Redis(
     db=settings.REDIS_DB
 )
 
-redis_client.config_set("maxmemory", "512mb")
+redis_client.config_set("maxmemory", MAX_REDIS_MEMORY)
 redis_client.config_set("maxmemory-policy", "allkeys-lfu")
 
 def cache_set_task(task_id: int, task_data: dict, expiry_date: datetime.datetime | None = None):
@@ -37,29 +35,6 @@ def cache_set_task(task_id: int, task_data: dict, expiry_date: datetime.datetime
     pipe.zadd("tasks_sorted", {task_id: created_at.timestamp()})
     pipe.execute()
 
-def cache_get_task(task_id: int) -> dict | None:
-    key = f"task:{task_id}"
-    data = redis_client.get(key)
-    if data:
-        return json.loads(data)
-    return None
-
-def cache_get_all_tasks() -> list:
-    task_ids = redis_client.zrevrange("tasks_sorted", 0, -1)
-    tasks = []
-    if not task_ids:
-        return tasks
-
-    pipe = redis_client.pipeline()
-    for task_id in task_ids:
-        pipe.get(f"task:{task_id.decode('utf-8')}")
-    results = pipe.execute()
-
-    for data in results:
-        if data:
-            tasks.append(json.loads(data))
-    return tasks
-
 def cache_delete_task(task_id: int):
     key = f"task:{task_id}"
     pipe = redis_client.pipeline()
@@ -67,16 +42,9 @@ def cache_delete_task(task_id: int):
     pipe.zrem("tasks_sorted", task_id)
     pipe.execute()
 
-def increment_counter(counter: AnalyticsCounters):
-    redis_client.incr(f"counter:{counter.value}")
-
-def get_counter(counter: AnalyticsCounters) -> int:
-    value = redis_client.get(f"counter:{counter.value}")
-    return int(value) if value else 0
-
-def cache_get_tasks_page_with_missing(page: int, page_size: int) -> (list, dict, list):
-    start = (page - 1) * page_size
-    end = start + page_size - 1
+def cache_get_tasks_page_with_missing(page: int) -> (list, dict, list):
+    start = (page - 1) * PAGE_SIZE
+    end = start + PAGE_SIZE - 1
     task_id_bytes = redis_client.zrange("tasks_sorted", start, end)
     if not task_id_bytes:
         return ([], {}, [])
@@ -97,6 +65,13 @@ def cache_get_tasks_page_with_missing(page: int, page_size: int) -> (list, dict,
         else:
             missing_ids.append(task_id)
     return (ordered_ids, cached_tasks, missing_ids)
+
+def increment_counter(counter: AnalyticsCounters):
+    redis_client.incr(f"counter:{counter.value}")
+
+def get_counter(counter: AnalyticsCounters) -> int:
+    value = redis_client.get(f"counter:{counter.value}")
+    return int(value) if value else 0
 
 def rebuild_sorted_set_index(db: Session = Depends(get_db)):
     tasks = TaskRepository.get_tasks_for_cache_index(db)

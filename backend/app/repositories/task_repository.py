@@ -18,16 +18,6 @@ class TaskRepository:
         return new_task
     
     @staticmethod
-    def get_task_by_id(db: Session, task_id: int) -> Optional[Task]:
-        return db.query(Task).filter(Task.id == task_id).first()
-
-    @staticmethod
-    def get_all_tasks(db: Session) -> List[Task]:
-        return db.query(Task).filter(
-            or_(Task.expiry_date == None, Task.expiry_date > datetime.utcnow())
-        ).order_by(Task.created_at.desc()).all()
-    
-    @staticmethod
     def get_tasks_by_ids(db: Session, task_ids: List[int]) -> List[Task]:
         return db.query(Task).filter(Task.id.in_(task_ids)).all()
     
