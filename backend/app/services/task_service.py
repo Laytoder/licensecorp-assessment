@@ -37,6 +37,22 @@ class TaskService:
         for t, item in zip(tasks, out_list):
             redis_utils.cache_set_task(item["id"], item, t.expiry_date)
         return [TaskOut(**item) for item in out_list]
+    
+    @staticmethod
+    def get_tasks_page(db: Session, page: int, page_size: int) -> List[TaskOut]:
+        ordered_ids, cached_tasks, missing_ids = redis_utils.cache_get_tasks_page_with_missing(page, page_size)
+
+        if missing_ids:
+            missing_tasks = TaskRepository.get_tasks_by_ids(db, missing_ids)
+            for task in missing_tasks:
+                out_data = TaskOut.from_orm(task).dict()
+                redis_utils.cache_set_task(task.id, out_data, task.expiry_date)
+                cached_tasks[task.id] = out_data
+
+        tasks = []
+        for task_id in ordered_ids:
+            tasks.append(TaskOut(**cached_tasks[task_id]))
+        return tasks
 
     @staticmethod
     def update_task(db: Session, task_id: int, updates: TaskUpdate) -> Optional[TaskOut]:

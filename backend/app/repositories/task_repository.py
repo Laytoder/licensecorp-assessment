@@ -25,7 +25,17 @@ class TaskRepository:
     def get_all_tasks(db: Session) -> List[Task]:
         return db.query(Task).filter(
             or_(Task.expiry_date == None, Task.expiry_date > datetime.utcnow())
-        ).order_by(Task.created_at.asc()).all()
+        ).order_by(Task.created_at.desc()).all()
+    
+    @staticmethod
+    def get_tasks_by_ids(db: Session, task_ids: List[int]) -> List[Task]:
+        return db.query(Task).filter(Task.id.in_(task_ids)).all()
+    
+    @staticmethod
+    def get_tasks_for_cache_index(db: Session) -> List[Tuple[int, datetime.datetime]]:
+        return tasks = db.query(Task.id, Task.created_at).filter(
+        or_(Task.expiry_date == None, Task.expiry_date > datetime.datetime.utcnow())
+    ).all()
 
     @staticmethod
     def update_task(db: Session, task: Task, updates: TaskUpdate) -> Task:

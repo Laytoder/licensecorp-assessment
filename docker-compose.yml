@@ -18,6 +18,18 @@ services:
       - POSTGRES_PORT=5432
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+  
+  frontend:
+    build: ./frontend
+    container_name: frontend-container
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: always
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend-container:8000
+      - NEXT_PUBLIC_WS_URL=ws://backend-container:8000/ws/
 
   redis:
     image: redis:latest
