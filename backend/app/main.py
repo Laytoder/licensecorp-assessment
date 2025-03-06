@@ -4,6 +4,7 @@ from app.core import redis_utils
 from app.routers import task_router, ws_router, analytics_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import asyncio
 
 def create_tables():
     try:

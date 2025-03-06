@@ -5,6 +5,9 @@ from app.core.config import settings
 from app.core.constants import AnalyticsCounters, PAGE_SIZE, MAX_TASK_TTL, MAX_REDIS_MEMORY
 from app.repositories.task_repository import TaskRepository
 from app.core.database import get_db
+from fastapi import Depends
+from sqlalchemy.orm import Session
+import asyncio
 
 redis_client = redis.Redis(
     host=settings.REDIS_HOST,
