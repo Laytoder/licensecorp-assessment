@@ -24,15 +24,16 @@ pubsub_redis = redis.Redis(
     db=settings.REDIS_DB
 )
 
-def serialize_task(task, event_type: str):
-    task_dict = task.dict()
-    task_dict["event"] = event_type
-    return json.dumps(task_dict, default=lambda o: o.isoformat() if isinstance(o, (datetime.datetime, datetime.date)) else o)
+def create_pub_msg(task, event_type: str):
+    final_dict = {}
+    final_dict["event"] = event_type
+    final_dict["task"] = task.dict()
+    return json.dumps(final_dict, default=lambda o: o.isoformat() if isinstance(o, (datetime.datetime, datetime.date)) else o)
 
 @router.post("/", response_model=TaskOut)
 def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
     new_task = TaskService.create_task(db, task_data)
-    pubsub_redis.publish(settings.TASKS_CHANNEL, serialize_task(new_task, "created")) 
+    pubsub_redis.publish(settings.TASKS_CHANNEL, create_pub_msg(new_task, "created")) 
     return new_task
 
 @router.get("/", response_model=List[TaskOut])
@@ -55,7 +56,7 @@ def update_task(task_id: int, updates: TaskUpdate, db: Session = Depends(get_db)
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Task not found"
             )
-        pubsub_redis.publish(settings.TASKS_CHANNEL, serialize_task(updated_task, "updated"))
+        pubsub_redis.publish(settings.TASKS_CHANNEL, create_pub_msg(updated_task, "updated"))
         return updated_task
     except StaleDataError:
         raise HTTPException(
