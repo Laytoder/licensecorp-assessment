@@ -1,0 +1,36 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore environment files
+.env
+venv/
+.venv/
+
+# Ignore IDE/editor files
+.vscode/
+.idea/
+*.swp
+
+# Ignore Git & dependencies
+.git/
+.gitignore
+
+# Ignore local dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Ignore logs and temp files
+*.log
+*.out
+*.tmp
+
+# Ignore Docker-related files
+docker-compose.yml
+.DS_Store
+
+# Ignore tests
+tests/
