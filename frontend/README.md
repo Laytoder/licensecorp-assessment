@@ -1,6 +1,6 @@
-# Task Management System Frontend
+# LicenseCorp Assessment Frontend
 
-This is the Next.js frontend for the Task Management System, providing a responsive UI for task management and real-time analytics.
+This is the Next.js frontend for the LicenseCorp Assessment, providing a responsive UI for task management and real-time analytics.
 
 ## Features
 

@@ -1,6 +1,6 @@
-# Task Management System Scripts
+# LicenseCorp Assessment Scripts
 
-This directory contains utility scripts for the Task Management System.
+This directory contains utility scripts for the LicenseCorp Assessment.
 
 ## Million Task Creator
 

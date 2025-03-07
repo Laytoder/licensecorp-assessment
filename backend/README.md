@@ -1,6 +1,6 @@
-# Task Management System Backend
+# LicenseCorp Assessment Backend
 
-This is the FastAPI backend for the Task Management System, designed to handle millions of tasks efficiently using Redis caching and PostgreSQL.
+This is the FastAPI backend for the LicenseCorp Assessment, designed to handle millions of tasks efficiently using Redis caching and PostgreSQL.
 
 ## Features
 
