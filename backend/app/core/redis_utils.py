@@ -37,7 +37,7 @@ def cache_get_task(task_id: int) -> dict | None:
     return None
 
 def cache_get_all_tasks() -> list:
-    task_ids = redis_client.zrange("tasks_sorted", 0, -1)
+    task_ids = redis_client.zrevrange("tasks_sorted", 0, -1)
     tasks = []
     if not task_ids:
         return tasks
