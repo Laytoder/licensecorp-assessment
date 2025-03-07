@@ -49,21 +49,6 @@ uvicorn app.main:app --reload --port 8002
 
 The backend will be available at http://localhost:8002
 
-### API Documentation
-
-Once the server is running, you can access:
-
-- Swagger documentation: http://localhost:8002/docs
-- ReDoc documentation: http://localhost:8002/redoc
-
-## Testing
-
-Run tests using pytest:
-
-```bash
-pytest
-```
-
 ## Deployment
 
 See the main [README.md](../README.md) for Docker deployment instructions. 
