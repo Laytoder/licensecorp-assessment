@@ -1,22 +1,15 @@
 import asyncio
-import redis
 from threading import Thread
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.core.config import settings
+from app.core.redis_clients import create_pubsub
 
 router = APIRouter(prefix="/ws", tags=["WebSocket"])
-
-# sub redis client
-redis_client = redis.Redis(
-    host=settings.REDIS_HOST,
-    port=settings.REDIS_PORT,
-    db=settings.REDIS_DB
-)
 
 @router.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    pubsub = redis_client.pubsub()
+    pubsub = create_pubsub()
     thread = None
 
     try:

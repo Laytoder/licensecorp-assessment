@@ -1,6 +1,7 @@
 'use client';
 
 import { TaskList } from '@/components/TaskList';
+import { Analytics } from '@/components/Analytics';
 
 export default function Home() {
   return (
@@ -9,6 +10,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
           Real-Time Task List
         </h1>
+        <Analytics />
         <TaskList />
       </div>
     </div>

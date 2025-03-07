@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException, status
-from app.core.redis_utils import redis_client
+from app.core.redis_clients import redis_client
 import time
 
 # 100 requests per min per ip

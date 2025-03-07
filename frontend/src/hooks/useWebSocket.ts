@@ -3,9 +3,12 @@ import { config } from '@/config/env';
 import { Task } from '@/types/task';
 
 interface WebSocketMessage {
-  event: 'created' | 'updated' | 'deleted';
+  event: 'created' | 'updated' | 'deleted' | 'counter_updated';
   id?: number;
-  task?: Task
+  task?: Task;
+  counter?: string;
+  value?: number;
+  timestamp?: string;
 }
 
 export const useWebSocket = (onMessage: (data: WebSocketMessage) => void) => {

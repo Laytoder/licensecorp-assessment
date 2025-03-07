@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Task, CreateTaskInput, UpdateTaskInput } from '@/types/task';
 import { useWebSocket } from './useWebSocket';

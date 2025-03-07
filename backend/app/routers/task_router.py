@@ -6,26 +6,19 @@ from app.core.database import get_db
 from app.schemas.task_schema import TaskCreate, TaskUpdate, TaskOut
 from app.services.task_service import TaskService
 from app.dependencies import rate_limit
-import redis
-from app.core.config import settings
 import json
 import datetime
 import random
 import time
 import asyncio
 from app.repositories.task_repository import TaskRepository
+from app.core.redis_clients import pubsub_redis
+from app.core.config import settings
 
 router = APIRouter(
     prefix="/tasks",
     tags=["Tasks"],
     dependencies=[Depends(rate_limit)]
-)
-
-# pub redis client
-pubsub_redis = redis.Redis(
-    host=settings.REDIS_HOST,
-    port=settings.REDIS_PORT,
-    db=settings.REDIS_DB
 )
 
 def create_pub_msg(task, event_type: str):

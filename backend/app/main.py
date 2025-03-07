@@ -25,7 +25,7 @@ def get_application() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:8080", "http://localhost:3001"],
+        allow_origins=["http://localhost:8080", "http://localhost:3001", "http://localhost:3000"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -33,6 +33,7 @@ def get_application() -> FastAPI:
 
     @app.on_event("startup")
     async def startup_event():
+        print("starting up")
         asyncio.create_task(redis_utils.monitor_redis())
 
     @app.exception_handler(Exception)

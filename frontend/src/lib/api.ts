@@ -35,4 +35,10 @@ export const api = {
     if (!response.ok) throw new Error('Failed to delete task');
     return response.json();
   },
+
+  async getAnalytics() {
+    const response = await fetch(`${config.apiUrl}/analytics`);
+    if (!response.ok) throw new Error('Failed to fetch analytics');
+    return response.json();
+  },
 };  
