@@ -38,6 +38,7 @@ def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
 
 @router.get("/{page}", response_model=List[TaskOut])
 def get_tasks_by_page(page: int, db: Session = Depends(get_db)):
+    print(f"Getting tasks for page {page}")
     return TaskService.get_tasks_page(db, page)
 
 @router.put("/{task_id}", response_model=TaskOut)

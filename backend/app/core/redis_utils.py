@@ -48,7 +48,7 @@ def cache_delete_task(task_id: int):
 def cache_get_tasks_page_with_missing(page: int) -> (list, dict, list):
     start = (page - 1) * PAGE_SIZE
     end = start + PAGE_SIZE - 1
-    task_id_bytes = redis_client.zrange("tasks_sorted", start, end)
+    task_id_bytes = redis_client.zrevrange("tasks_sorted", start, end)
     if not task_id_bytes:
         return ([], {}, [])
     

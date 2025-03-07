@@ -1,5 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
+import { config } from '@/config/env';
 import { Task } from '@/types/task';
-import { useEffect, useRef } from 'react';
 
 interface WebSocketMessage {
   event: 'created' | 'updated' | 'deleted';
@@ -9,32 +10,52 @@ interface WebSocketMessage {
 
 export const useWebSocket = (onMessage: (data: WebSocketMessage) => void) => {
   const wsRef = useRef<WebSocket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8001/ws/');
-    wsRef.current = ws;
+    let ws: WebSocket | null = null;
 
-    ws.onopen = () => {
-      console.log('WebSocket connected');
+    const connect = () => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        return; // Already connected
+      }
+
+      console.log("connecting to socket");
+      ws = new WebSocket(config.wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        setIsConnected(true);
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        onMessage(data);
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setIsConnected(false);
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        setIsConnected(false);
+        wsRef.current = null;
+      };
     };
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      onMessage(data);
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
-    };
+    connect();
 
     return () => {
-      ws.close();
+      if (ws) {
+        ws.close();
+        wsRef.current = null;
+        setIsConnected(false);
+      }
     };
   }, [onMessage]);
 
-  return wsRef.current;
-}; 
+  return { ws: wsRef.current, isConnected };
+};

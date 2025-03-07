@@ -6,9 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import asyncio
 
+print("ran")
+
 def create_tables():
     try:
         Base.metadata.create_all(bind=engine)
+        print("Tables created successfully")
     except Exception as e:
         print(f"Error creating tables: {str(e)}")
 
@@ -22,7 +25,7 @@ def get_application() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000"],
+        allow_origins=["http://localhost:8080"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -38,7 +41,7 @@ def get_application() -> FastAPI:
             status_code=500,
             content={"detail": "Internal server error occurred"}
         )
-
+    print("included routers")
     app.include_router(task_router.router)
     app.include_router(ws_router.router)
     app.include_router(analytics_router.router)
