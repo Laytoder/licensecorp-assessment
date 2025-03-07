@@ -69,9 +69,22 @@ def cache_get_tasks_page_with_missing(page: int) -> (list, dict, list):
             missing_ids.append(task_id)
     return (ordered_ids, cached_tasks, missing_ids)
 
-def increment_counter(counter: AnalyticsCounters):
-    new_value = redis_client.incr(f"counter:{counter.value}")
+def increment_counter(counter: AnalyticsCounters) -> int:
+    """
+    Increment a counter by 1 in Redis and publish the update via WebSocket.
     
+    Args:
+        counter: The counter to increment
+        
+    Returns:
+        The new counter value
+    """
+    counter_key = f"counter:{counter.value}"
+    
+    # Increment in Redis
+    new_value = redis_client.incr(counter_key)
+    
+    # Publish the counter update event via WebSocket
     counter_event = {
         "event": "counter_updated",
         "counter": counter.value,
@@ -83,10 +96,33 @@ def increment_counter(counter: AnalyticsCounters):
         settings.TASKS_CHANNEL,
         json.dumps(counter_event)
     )
+    
+    return new_value
 
-def get_counter(counter: AnalyticsCounters) -> int:
-    value = redis_client.get(f"counter:{counter.value}")
-    return int(value) if value else 0
+def get_counter(counter: AnalyticsCounters) -> int | None:
+    """
+    Get a counter value from Redis.
+    
+    Args:
+        counter: The counter to get
+        
+    Returns:
+        The counter value, or None if the counter doesn't exist
+    """
+    counter_key = f"counter:{counter.value}"
+    value = redis_client.get(counter_key)
+    return int(value) if value is not None else None
+
+def set_counter(counter: AnalyticsCounters, value: int) -> None:
+    """
+    Set a counter to a specific value in Redis.
+    
+    Args:
+        counter: The counter to set
+        value: The value to set
+    """
+    counter_key = f"counter:{counter.value}"
+    redis_client.set(counter_key, value)
 
 def rebuild_sorted_set_index(db=None):
     print(f"[{datetime.datetime.now()}] Rebuilding tasks_sorted index...")
@@ -117,19 +153,27 @@ def rebuild_sorted_set_index(db=None):
             db.close()
 
 async def monitor_redis():
+    """
+    Monitor Redis connection and rebuild sorted set index if connection was lost.
+    """
     redis_was_down = False
+    print(f"[{datetime.datetime.now()}] Starting Redis monitoring service")
+    
     while True:
-        print("monitoring redis")
+        print(f"[{datetime.datetime.now()}] Checking Redis connection")
         try:
             if redis_client.ping():
                 if redis_was_down:
+                    print(f"[{datetime.datetime.now()}] Redis connection restored, rebuilding index")
                     # Let rebuild_sorted_set_index handle its own session
                     rebuild_sorted_set_index()
                     redis_was_down = False
             else:
+                if not redis_was_down:
+                    print(f"[{datetime.datetime.now()}] Redis ping failed but no exception raised")
                 redis_was_down = True
         except Exception as e:
             if not redis_was_down:
-                print("Redis appears to be down:", e)
+                print(f"[{datetime.datetime.now()}] Redis appears to be down: {str(e)}")
             redis_was_down = True
         await asyncio.sleep(5)

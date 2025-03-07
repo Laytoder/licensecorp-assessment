@@ -5,6 +5,7 @@ from app.schemas.task_schema import TaskCreate, TaskUpdate, TaskOut
 from app.models.task_model import Task
 from app.core import redis_utils
 from app.core.constants import AnalyticsCounters
+from app.services.analytics_service import AnalyticsService
 
 class TaskService:
     @staticmethod
@@ -12,7 +13,7 @@ class TaskService:
         new_task = TaskRepository.create_task(db, task_data)
         out_data = TaskOut.from_orm(new_task).dict()
         redis_utils.cache_set_task(new_task.id, out_data, new_task.expiry_date)
-        redis_utils.increment_counter(AnalyticsCounters.TASKS_CREATED)
+        AnalyticsService.increment_counter(db, AnalyticsCounters.TASKS_CREATED)
         return TaskOut.from_orm(new_task)
     
     @staticmethod
@@ -39,7 +40,7 @@ class TaskService:
         updated = TaskRepository.update_task(db, task, updates)
         out_data = TaskOut.from_orm(updated).dict()
         redis_utils.cache_set_task(updated.id, out_data, updated.expiry_date)
-        redis_utils.increment_counter(AnalyticsCounters.TASKS_UPDATED)
+        AnalyticsService.increment_counter(db, AnalyticsCounters.TASKS_UPDATED)
         return TaskOut(**out_data)
 
     @staticmethod
@@ -49,5 +50,5 @@ class TaskService:
             return False
         TaskRepository.delete_task(db, task)
         redis_utils.cache_delete_task(task_id)
-        redis_utils.increment_counter(AnalyticsCounters.TASKS_DELETED)
+        AnalyticsService.increment_counter(db, AnalyticsCounters.TASKS_DELETED)
         return True

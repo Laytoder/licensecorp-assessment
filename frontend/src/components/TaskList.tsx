@@ -204,9 +204,9 @@ export const TaskList: React.FC = () => {
       </div>
 
       {/* Page information */}
-      <div className="mb-4 text-center text-sm text-gray-500">
+      {/* <div className="mb-4 text-center text-sm text-gray-500">
         Page {currentPage} of {totalPages} ({tasks.length} tasks)
-      </div>
+      </div> */}
 
       {/* Tasks */}
       <div className="space-y-6 mb-8">

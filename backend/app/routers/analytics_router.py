@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends
-from app.core.redis_utils import get_counter
+from sqlalchemy.orm import Session
 from app.dependencies import rate_limit
-from app.core.constants import AnalyticsCounters
+from app.core.database import get_db
+from app.services.analytics_service import AnalyticsService
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"], dependencies=[Depends(rate_limit)])
 
 @router.get("/")
-def get_analytics():
-    return {
-        "tasks_created": get_counter(AnalyticsCounters.TASKS_CREATED),
-        "tasks_updated": get_counter(AnalyticsCounters.TASKS_UPDATED),
-        "tasks_deleted": get_counter(AnalyticsCounters.TASKS_DELETED)
-    }
+def get_analytics(db: Session = Depends(get_db)):
+    """
+    Get all analytics counters.
+    Will automatically repopulate Redis cache with database values if needed.
+    """
+    return AnalyticsService.get_all_counters(db)
