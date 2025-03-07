@@ -49,14 +49,6 @@ python create_million_tasks.py
 
 The script makes a single POST request to the backend endpoint `http://localhost:8002/tasks/populate/1000000`, which initiates the batch creation process on the server side.
 
-### Monitoring Progress
-
-After running the script, you can monitor the todo creation progress:
-
-1. Through the frontend UI at http://localhost:3000
-2. Via the backend API at http://localhost:8002/tasks/stats
-3. By watching the analytics counters at http://localhost:8002/analytics/counters
-
 ### Notes
 
 - The script itself completes quickly as it only initiates the process

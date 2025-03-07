@@ -23,12 +23,6 @@ This is the Next.js frontend for the LicenseCorp Assessment, providing a respons
 npm install
 ```
 
-2. Set up environment variables (create a `.env.local` file in the frontend directory):
-
-```
-NEXT_PUBLIC_API_URL=http://localhost:8002
-```
-
 ### Running the Frontend
 
 Start the development server:
@@ -37,7 +31,7 @@ Start the development server:
 npm run dev
 ```
 
-The frontend will be available at http://localhost:3000
+The frontend will be available at http://localhost:8080
 
 ### Building for Production
 
