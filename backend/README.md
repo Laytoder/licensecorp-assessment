@@ -1,10 +1,10 @@
 # LicenseCorp Assessment Backend
 
-This is the FastAPI backend for the LicenseCorp Assessment, designed to handle millions of tasks efficiently using Redis caching and PostgreSQL.
+This is the FastAPI backend for the LicenseCorp Assessment, designed to handle millions of todos efficiently using Redis caching and PostgreSQL.
 
 ## Features
 
-- RESTful API for task management
+- RESTful API for todo management
 - Redis caching for high performance
 - PostgreSQL database for data persistence
 - Real-time analytics using WebSockets

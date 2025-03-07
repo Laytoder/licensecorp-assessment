@@ -1,13 +1,13 @@
 # LicenseCorp Assessment Frontend
 
-This is the Next.js frontend for the LicenseCorp Assessment, providing a responsive UI for task management and real-time analytics.
+This is the Next.js frontend for the LicenseCorp Assessment, providing a responsive UI for todo management and real-time analytics.
 
 ## Features
 
 - Modern React-based UI built with Next.js
-- Real-time task updates and analytics visualization
+- Real-time todo updates and analytics visualization
 - Responsive design for desktop and mobile
-- Optimized for handling large volumes of tasks
+- Optimized for handling large volumes of todos
 
 ## Local Setup
 

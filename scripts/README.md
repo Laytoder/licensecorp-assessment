@@ -2,13 +2,13 @@
 
 This directory contains utility scripts for the LicenseCorp Assessment.
 
-## Million Task Creator
+## Million Todo Creator
 
-The primary script here is `create_million_tasks.py`, which helps test the system's performance with a large volume of tasks.
+The primary script here is `create_million_tasks.py`, which helps test the system's performance with a large volume of todos.
 
 ### Purpose
 
-This script allows you to trigger the creation of 1 million tasks on the backend, enabling:
+This script allows you to trigger the creation of 1 million todos on the backend, enabling:
 - Performance testing
 - Caching efficiency evaluation
 - Load testing
@@ -41,7 +41,7 @@ pip install -r requirements.txt
 
 ### Running the Script
 
-To trigger the creation of 1 million tasks:
+To trigger the creation of 1 million todos:
 
 ```bash
 python create_million_tasks.py
@@ -51,7 +51,7 @@ The script makes a single POST request to the backend endpoint `http://localhost
 
 ### Monitoring Progress
 
-After running the script, you can monitor the task creation progress:
+After running the script, you can monitor the todo creation progress:
 
 1. Through the frontend UI at http://localhost:3000
 2. Via the backend API at http://localhost:8002/tasks/stats
@@ -60,5 +60,5 @@ After running the script, you can monitor the task creation progress:
 ### Notes
 
 - The script itself completes quickly as it only initiates the process
-- The actual task creation happens asynchronously on the backend
-- Creating 1 million tasks may take several minutes depending on your server's performance 
+- The actual todo creation happens asynchronously on the backend
+- Creating 1 million todos may take several minutes depending on your server's performance 
