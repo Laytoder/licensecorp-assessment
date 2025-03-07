@@ -39,13 +39,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3. Set up environment variables (create a `.env` file in the backend directory):
-
-```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/taskdb
-REDIS_URL=redis://localhost:6379/0
-```
-
 ### Running the Backend
 
 Start the FastAPI server using Uvicorn:
