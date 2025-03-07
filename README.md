@@ -2,7 +2,9 @@
 
 ## Project Demo
 
-[Include video demonstration here]
+<a href="https://youtu.be/tIQlwfO3al4?si=cYfVyvP56BrU1GMA">
+  <img src="https://i.imgur.com/N8nSvJi.jpeg" alt="Project Demo Video" width="600">
+</a>
 
 ## Overview
 
