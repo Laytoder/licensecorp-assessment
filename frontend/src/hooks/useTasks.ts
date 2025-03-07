@@ -3,85 +3,87 @@ import { Task, CreateTaskInput, UpdateTaskInput } from '@/types/task';
 import { useWebSocket } from './useWebSocket';
 import { api } from '@/lib/api';
 
-const WINDOW_SIZE = 60; // Keep 3 pages worth of tasks (assuming 20 tasks per page)
-const CLEANUP_THRESHOLD = 80; // Start cleanup when we exceed this number of tasks
+const TASKS_PER_PAGE = 20; // Standard number of tasks per page
 
 export const useTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const loadedTaskIds = useRef(new Set<number>());
-
-  // Cleanup function to maintain window size
-  const cleanupTasks = useCallback((currentTasks: Task[]) => {
-    if (currentTasks.length > CLEANUP_THRESHOLD) {
-      const tasksToKeep = currentTasks.slice(-WINDOW_SIZE);
-      // Update loadedTaskIds to match the kept tasks
-      loadedTaskIds.current = new Set(tasksToKeep.map(task => task.id));
-      return tasksToKeep;
-    }
-    return currentTasks;
-  }, []);
+  const initialLoadDone = useRef(false);
 
   // Memoize the WebSocket message handler
   const handleWebSocketMessage = useCallback((message: { event: string; task?: Task; id?: number }) => {
     switch (message.event) {
       case 'created':
-        if (currentPage === 1) { // Only add new tasks if we're on the first page
-          setTasks(prev => [message.task!, ...cleanupTasks(prev)]);
-          loadedTaskIds.current.add(message.task!.id);
+        // If we're on page 1, add the new task at the top
+        if (currentPage === 1) {
+          setTasks(prev => [message.task!, ...prev]);
         }
         break;
       case 'updated':
-        if (loadedTaskIds.current.has(message.task!.id)) {
-          setTasks(prev => prev.map(task => 
-            task.id === message.task!.id ? message.task! : task
-          ));
-        }
+        // Update task if it's on the current page
+        setTasks(prev => 
+          prev.map(task => task.id === message.task!.id ? message.task! : task)
+        );
         break;
       case 'deleted':
-        if (loadedTaskIds.current.has(message.id!)) {
-          setTasks(prev => prev.filter(task => task.id !== message.id));
-          loadedTaskIds.current.delete(message.id!);
-        }
+        // Remove task if it's on the current page
+        setTasks(prev => prev.filter(task => task.id !== message.id));
         break;
     }
-  }, [currentPage, cleanupTasks]);
+  }, [currentPage]);
 
-  // Handle WebSocket updates only for loaded tasks
+  // Handle WebSocket updates
   const { isConnected } = useWebSocket(handleWebSocketMessage);
 
-  const loadMoreTasks = useCallback(async () => {
-    if (loading || !hasMore) return;
+  // Load tasks for a specific page
+  const loadPage = useCallback(async (pageNumber: number) => {
+    if (loading) return;
 
     try {
       setLoading(true);
-      const newTasks = await api.getTasks(currentPage);
+      const response = await api.getTasks(pageNumber);
       
-      if (newTasks.length === 0) {
-        setHasMore(false);
+      // Assuming the API returns { tasks: Task[], total_pages: number }
+      if (response.tasks) {
+        setTasks(response.tasks);
+        setTotalPages(response.total_pages || Math.ceil(response.total_count / TASKS_PER_PAGE) || 1);
       } else {
-        setTasks(prev => {
-          const combined = [...prev, ...newTasks];
-          // Update loaded task IDs and cleanup if necessary
-          newTasks.forEach((task: Task) => loadedTaskIds.current.add(task.id));
-          return cleanupTasks(combined);
-        });
-        setCurrentPage(prev => prev + 1);
+        // Fallback if API doesn't return expected structure
+        setTasks(response);
+        // Estimate total pages based on whether we got a full page
+        if (response.length < TASKS_PER_PAGE && pageNumber === 1) {
+          setTotalPages(1);
+        } else if (response.length < TASKS_PER_PAGE) {
+          setTotalPages(pageNumber);
+        } else {
+          setTotalPages(Math.max(totalPages, pageNumber + 1));
+        }
       }
+      
+      setCurrentPage(pageNumber);
       setError(null);
     } catch (err) {
       setError('Failed to fetch tasks');
     } finally {
       setLoading(false);
     }
-  }, [currentPage, loading, hasMore, cleanupTasks]);
+  }, [loading, totalPages]);
+
+  // Go to a specific page
+  const goToPage = useCallback((pageNumber: number) => {
+    // Ensure page number is valid
+    const page = Math.max(1, Math.min(pageNumber, totalPages));
+    loadPage(page);
+  }, [loadPage, totalPages]);
 
   const createTask = async (input: CreateTaskInput) => {
     try {
       await api.createTask(input);
+      // After creating a task, go back to page 1
+      goToPage(1);
       setError(null);
     } catch (err) {
       setError('Failed to create task');
@@ -100,25 +102,29 @@ export const useTasks = () => {
   const deleteTask = async (id: number) => {
     try {
       await api.deleteTask(id);
+      // Refresh current page after delete
+      goToPage(currentPage);
       setError(null);
     } catch (err) {
       setError('Failed to delete task');
     }
   };
 
-  // Load initial page only after WebSocket connection is established
+  // Load initial page when WebSocket connects and only once
   useEffect(() => {
-    if (isConnected) {
-      loadMoreTasks();
+    if (isConnected && !initialLoadDone.current) {
+      initialLoadDone.current = true;
+      loadPage(1);
     }
-  }, [isConnected, loadMoreTasks]); // Load first page when WebSocket connects
+  }, [isConnected]); // Removed loadPage from dependencies to prevent infinite calls
 
   return {
     tasks,
     loading,
     error,
-    hasMore,
-    loadMoreTasks,
+    currentPage,
+    totalPages,
+    goToPage,
     createTask,
     updateTask,
     deleteTask,
